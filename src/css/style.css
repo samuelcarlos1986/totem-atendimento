@@ -1,0 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+:root{
+  --bg: #0E1116;
+  --surface: #151A21;
+  --surface-2: #1B222B;
+  --hairline: #2A313C;
+  --text: #E6E9EE;
+  --text-muted: #8B96A5;
+  --text-faint: #565F6C;
+  --accent: #2F7BD6;
+  --ok: #4C8065;
+  --warn: #C9A227;
+  --err: #B3261E;
+  --font-body: 'IBM Plex Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+body{
+  background:var(--bg); color:var(--text); font-family:var(--font-body);
+  min-height:100vh;
+}
+
+.shell{ min-height:100vh; }
+
+/* ---------- Controle de telas ---------- */
+.tela{ display:none; min-height:100vh; }
+.tela-ativa{ display:flex; align-items:center; justify-content:center; }
+
+/* ============================================================
+   TELA 1 — FORMULÁRIO
+   ============================================================ */
+.form-card{
+  width:100%; max-width:420px; padding: 40px 34px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+}
+.totem-title{ font-family:var(--font-mono); font-size:12px; letter-spacing:0.12em; color:var(--text-faint); text-transform:uppercase; margin-bottom:6px; }
+.totem-sub{ font-size:14px; color:var(--text-muted); margin-bottom:26px; }
+
+.campo{ display:block; margin-bottom:18px; }
+.campo-label{ display:block; font-size:13px; color:var(--text-muted); margin-bottom:6px; }
+.obrigatorio{ color:var(--err); }
+
+.campo input{
+  width:100%; padding: 12px 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: border-color .12s;
+}
+.campo input:focus{ outline:none; border-color: var(--accent); }
+.campo input.invalido{ border-color: var(--err); }
+
+.campo-erro{
+  display:block; min-height:16px; font-size:12px; color:var(--err); margin-top:5px;
+}
+
+.btn{
+  font-family:var(--font-mono); font-size:13px; font-weight:600; letter-spacing:0.04em;
+  padding: 14px 24px; border-radius:4px; border:1px solid var(--hairline);
+  background: var(--accent); color:#fff; cursor:pointer; width:100%;
+  transition: filter .12s, transform .05s;
+  margin-top: 6px;
+}
+.btn:hover{ filter:brightness(1.08); }
+.btn:active{ transform: scale(0.98); }
+.btn:disabled{ background:var(--surface-2); color:var(--text-faint); cursor:not-allowed; }
+.btn-secondary{ background: var(--surface); color:var(--text-muted); margin-top:10px; }
+.btn-danger{ background: var(--err); color:#fff; }
+
+.timeout-aviso{
+  margin-top:18px; padding:10px 12px; border-radius:6px;
+  background: rgba(201,162,39,0.12); border:1px solid var(--warn);
+  color: var(--warn); font-size:12px; text-align:center;
+}
+
+/* ---------- Modal de confirmação ---------- */
+.modal-overlay{
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  display:flex; align-items:center; justify-content:center; z-index: 50;
+}
+/* REQUISITO (correção defensiva): o atributo [hidden] precisa vencer a
+   regra de display acima. Sem isso, uma regra de autor com display
+   sempre tem prioridade sobre o display:none implícito do [hidden],
+   mesmo sem duplicar seletor/especificidade — é uma pegadinha comum
+   de CSS. Esta regra garante que hidden sempre esconde o modal. */
+.modal-overlay[hidden]{ display: none; }
+.modal-caixa{
+  width: 100%; max-width: 380px; background: var(--surface);
+  border: 1px solid var(--hairline); border-radius: 10px; padding: 26px;
+}
+.modal-titulo{ font-size:16px; font-weight:600; margin-bottom:14px; }
+.modal-corpo{ font-size:13px; color:var(--text-muted); line-height:1.9; margin-bottom:20px; }
+.modal-corpo b{ color: var(--text); }
+.modal-botoes{ display:flex; gap:10px; }
+.modal-botoes .btn{ margin-top:0; }
+
+/* ============================================================
+   TELA 2 — TOTEM + CONSOLE DO SERVIDOR
+   ============================================================ */
+.shell-interna{ display:grid; grid-template-columns: 380px 1fr; min-height:100vh; width:100%; }
+@media (max-width: 860px){ .shell-interna{ grid-template-columns:1fr; } }
+
+.totem{
+  padding: 34px 30px;
+  border-right: 1px solid var(--hairline);
+  display:flex; flex-direction:column; align-items:center; text-align:center;
+}
+
+.ticket{
+  width:100%; max-width:260px;
+  background: var(--surface);
+  border: 1px dashed var(--hairline);
+  border-radius: 6px;
+  padding: 22px 16px;
+  margin-bottom: 12px;
+}
+.ticket-label{ font-family:var(--font-mono); font-size:10px; color:var(--text-faint); letter-spacing:0.1em; text-transform:uppercase; }
+.ticket-number{ font-family:var(--font-mono); font-size:46px; font-weight:700; color:var(--accent); margin:8px 0; }
+.ticket-status{ font-family:var(--font-mono); font-size:11px; color:var(--text-muted); min-height:16px; }
+
+.sim-controls{ margin-top:30px; width:100%; max-width:260px; text-align:left; }
+.sim-label{ font-family:var(--font-mono); font-size:10px; color:var(--text-faint); letter-spacing:0.1em; text-transform:uppercase; margin: 18px 0 8px; }
+.sim-controls .btn{ margin-bottom:8px; font-size:11px; padding:10px 14px; }
+
+.server-state{
+  margin-top:26px; width:100%; max-width:260px; text-align:left;
+  font-family:var(--font-mono); font-size:11px; color:var(--text-muted);
+  border-top:1px solid var(--hairline); padding-top:14px; line-height:2;
+}
+.server-state b{ color:var(--text); }
+.pill{ display:inline-block; padding:1px 7px; border-radius:3px; font-size:10px; }
+.pill.up{ background:rgba(76,128,101,0.15); color:var(--ok); }
+.pill.down{ background:rgba(179,38,30,0.18); color:var(--err); }
+
+/* ---------- Console do servidor ---------- */
+.logpanel{ padding: 30px 34px; display:flex; flex-direction:column; }
+.log-header{ font-family:var(--font-mono); font-size:12px; letter-spacing:0.12em; color:var(--text-faint); text-transform:uppercase; margin-bottom:4px; }
+.log-sub{ font-size:13px; color:var(--text-muted); margin-bottom:20px; }
+
+.log-entries{ flex:1; overflow-y:auto; display:flex; flex-direction:column-reverse; gap:8px; max-height: 80vh; }
+.log-entry{
+  font-family:var(--font-mono); font-size:12px; padding:10px 12px; border-radius:4px;
+  background: var(--surface); border-left:3px solid var(--hairline); line-height:1.6;
+  word-break: break-word;
+}
+.log-entry.ok{ border-left-color:var(--ok); }
+.log-entry.warn{ border-left-color:var(--warn); }
+.log-entry.err{ border-left-color:var(--err); }
+.log-time{ color:var(--text-faint); margin-right:8px; }
+.log-code{ font-weight:700; margin-right:6px; }
+.log-code.ok{ color:var(--ok); }
+.log-code.warn{ color:var(--warn); }
+.log-code.err{ color:var(--err); }
+
+/* ============================================================
+   TELA DE ERRO CUSTOMIZADA
+   ============================================================ */
+.erro-card{
+  max-width: 420px; text-align:center; padding: 40px 34px;
+  background: var(--surface); border: 1px solid var(--hairline); border-radius: 10px;
+}
+.erro-codigo{ font-family:var(--font-mono); font-size:44px; font-weight:700; color:var(--err); margin-bottom:10px; }
+.erro-titulo{ font-size:17px; font-weight:600; margin-bottom:10px; }
+.erro-mensagem{ font-size:13px; color:var(--text-muted); line-height:1.7; margin-bottom:24px; }

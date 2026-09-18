@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!--
+    REQUISITO (Front-end / Resiliência — CSP):
+    Content-Security-Policy restringe de onde o navegador pode carregar
+    scripts/estilos, mitigando XSS por injeção de <script src="externo">.
+    Aqui só permitimos recursos do próprio documento ('self') e a fonte
+    do Google Fonts.
+  -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self';">
+
+  <title>Totem — Gerador de Senha de Atendimento</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="shell">
+
+    <!-- ======================================================
+         TELA 1 — IDENTIFICAÇÃO (Front-end)
+         Formulário com os recursos de segurança/UX exigidos no
+         checklist: limite de caracteres, campos obrigatórios,
+         máscaras de entrada, tipagem de inputs, confirmação e
+         timeout de inatividade.
+         ====================================================== -->
+    <section id="tela-formulario" class="tela tela-ativa">
+      <div class="form-card">
+        <div class="totem-title">Totem de Atendimento</div>
+        <div class="totem-sub">Preencha seus dados para retirar a senha</div>
+
+        <form id="form-identificacao" novalidate>
+
+          <label class="campo">
+            <span class="campo-label">Nome completo <span class="obrigatorio">*</span></span>
+            <input
+              type="text"
+              id="input-nome"
+              name="nome"
+              maxlength="60"
+              required
+              autocomplete="off"
+              placeholder="Ex.: Maria da Silva">
+            <span class="campo-erro" id="erro-nome" aria-live="polite"></span>
+          </label>
+
+          <label class="campo">
+            <span class="campo-label">CPF <span class="obrigatorio">*</span></span>
+            <input
+              type="text"
+              id="input-cpf"
+              name="cpf"
+              inputmode="numeric"
+              maxlength="14"
+              required
+              autocomplete="off"
+              placeholder="000.000.000-00">
+            <span class="campo-erro" id="erro-cpf" aria-live="polite"></span>
+          </label>
+
+          <label class="campo">
+            <span class="campo-label">Telefone <span class="obrigatorio">*</span></span>
+            <input
+              type="tel"
+              id="input-telefone"
+              name="telefone"
+              inputmode="numeric"
+              maxlength="15"
+              required
+              autocomplete="off"
+              placeholder="(00) 00000-0000">
+            <span class="campo-erro" id="erro-telefone" aria-live="polite"></span>
+          </label>
+
+          <label class="campo">
+            <span class="campo-label">E-mail (opcional)</span>
+            <input
+              type="email"
+              id="input-email"
+              name="email"
+              maxlength="80"
+              autocomplete="off"
+              placeholder="nome@exemplo.com">
+            <span class="campo-erro" id="erro-email" aria-live="polite"></span>
+          </label>
+
+          <button type="submit" class="btn" id="btn-continuar">RETIRAR SENHA</button>
+        </form>
+
+        <div class="timeout-aviso" id="timeout-aviso" hidden>
+          Sessão parada por inatividade. Os campos serão limpos em <span id="timeout-segundos">10</span>s…
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================
+         MODAL DE CONFIRMAÇÃO (Front-end)
+         REQUISITO: popup de confirmação antes de uma ação que
+         gera um registro no servidor.
+         ====================================================== -->
+    <div id="modal-confirmacao" class="modal-overlay" hidden>
+      <div class="modal-caixa">
+        <div class="modal-titulo">Confirmar dados</div>
+        <div class="modal-corpo" id="modal-resumo"></div>
+        <div class="modal-botoes">
+          <button class="btn btn-secondary" id="btn-cancelar-confirmacao">Corrigir</button>
+          <button class="btn" id="btn-confirmar">Confirmar e gerar senha</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================
+         TELA 2 — SENHA + CONSOLE DO SERVIDOR (Back-end)
+         ====================================================== -->
+    <section id="tela-totem" class="tela">
+      <div class="shell-interna">
+
+        <div class="totem">
+          <div class="totem-title">Sua senha</div>
+          <div class="totem-sub" id="saudacao-usuario"></div>
+
+          <div class="ticket">
+            <div class="ticket-label">Senha de atendimento</div>
+            <div class="ticket-number" id="ticket-number">—</div>
+            <div class="ticket-status" id="ticket-status"></div>
+          </div>
+
+          <button class="btn btn-secondary" id="btn-nova-senha">Retirar outra senha</button>
+
+          <div class="sim-controls">
+            <div class="sim-label">Simular cenários (demonstração)</div>
+            <button class="btn btn-secondary" id="btn-flood">Cliente clicando 20x seguidas</button>
+            <button class="btn btn-secondary" id="btn-falha-bd">Banco de dados fora do ar</button>
+            <button class="btn btn-danger" id="btn-queda">Queda de energia no servidor</button>
+          </div>
+
+          <div class="server-state">
+            <div>Servidor: <b id="state-servidor"><span class="pill up">no ar</span></b></div>
+            <div>Circuito do banco: <b id="state-circuito"><span class="pill up">fechado</span></b></div>
+            <div>Sessão (token): <b id="state-token">—</b></div>
+            <div>Última senha salva: <b id="state-ultima">0</b></div>
+          </div>
+        </div>
+
+        <div class="logpanel">
+          <div class="log-header">Console do servidor</div>
+          <div class="log-sub">Cada linha é uma decisão do backend — autenticação, sanitização, idempotência, rate limit, circuit breaker e persistência de estado.</div>
+          <div class="log-entries" id="log-entries"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ======================================================
+         TELA DE ERRO CUSTOMIZADA (Front-end / Resiliência)
+         REQUISITO: nunca expor stack trace — página de erro
+         genérica e amigável, sem detalhes técnicos internos.
+         ====================================================== -->
+    <section id="tela-erro" class="tela">
+      <div class="erro-card">
+        <div class="erro-codigo" id="erro-codigo">503</div>
+        <div class="erro-titulo" id="erro-titulo">Serviço temporariamente indisponível</div>
+        <div class="erro-mensagem" id="erro-mensagem">
+          Não foi possível concluir sua solicitação agora. Por favor, tente novamente em instantes.
+        </div>
+        <button class="btn" id="btn-voltar-erro">Voltar ao início</button>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Ordem importa: backend (simulação de servidor) carrega antes do
+       frontend, que depende das funções expostas por ele. -->
+  <script src="js/backend.js"></script>
+  <script src="js/frontend.js"></script>
+</body>
+</html>

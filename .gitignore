@@ -1,0 +1,14 @@
+# Dependências (caso algum dia se adicione ferramental Node)
+node_modules/
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+*.swp
+
+# Variáveis de ambiente / segredos (não existem neste protótipo, mas
+# ficam ignorados por padrão para qualquer evolução futura do projeto)
+.env
